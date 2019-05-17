@@ -32,13 +32,14 @@ pipeline {
     }
     stage('Build Release') {
       when {
-        branch 'master'
+        branch env.BRANCH_NAME
       }
       steps {
         container('nodejs') {
 
           // ensure we're not on a detached head
-          sh "git checkout master"
+          sh "git checkout ${env.BRANCH_NAME}"
+          sh 'git config --global credential.username upendrasahu'
           sh "git config --global credential.helper store"
           sh "jx step git credentials"
 
@@ -55,7 +56,7 @@ pipeline {
     }
     stage('Promote to Environments') {
       when {
-        branch 'master'
+        branch env.BRANCH_NAME
       }
       steps {
         container('nodejs') {
@@ -66,7 +67,7 @@ pipeline {
             sh "jx step helm release"
 
             // promote through all 'Auto' promotion Environments
-            sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION)"
+            sh 'jx step helm apply --namespace=jx-staging --name=frontend-354144 --no-helm-version=true --wait=false'
           }
         }
       }
