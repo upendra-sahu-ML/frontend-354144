@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/upendrasahu/frontend-354144:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/upendrasahu/frontend-354144:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: frontend-354144
+        chartPath: charts/frontend-354144
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/upendrasahu/frontend-354144'
+          image.tag: '{{.DIGEST_HEX}}'
